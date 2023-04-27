@@ -1,5 +1,6 @@
 package edu.temple.superbrowser
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,6 +14,19 @@ class BrowserViewModel : ViewModel() {
     private var numberOfPages : Int = 0
     var currentPageIndex = 0
     val pageTitles = HashMap<Int, String>()
+    val bmList = BookMarkList()
+
+
+
+
+    fun addBookmark(url:String, title: String){
+        val bm:Bookmark = Bookmark(url,title)
+        bmList.list.add(bm)
+    }
+
+    fun getBookmark():BookMarkList{
+        return bmList
+    }
 
     fun getCurrentPageCount (): Int {
         return numberOfPages
@@ -35,4 +49,5 @@ class BrowserViewModel : ViewModel() {
     fun getPageTitleObservable (): LiveData<Int> {
         return titleObservable
     }
+
 }

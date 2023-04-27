@@ -13,4 +13,9 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+    <style name="Theme.SuperBrowser.Dialog" parent="Theme.MaterialComponents.DayNight.Dialog">
+        <!-- Primary brand color. -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
 </resources>

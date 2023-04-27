@@ -1,12 +1,23 @@
 package edu.temple.superbrowser
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
+import com.android.volley.RequestQueue
+import com.android.volley.toolbox.Volley
+import java.io.*
 
-class BrowserActivity : AppCompatActivity(), BrowserControlFragment.BrowserControlInterface, PageViewerFragment.PageViewerInterface, PageListFragment.PageListInterface {
+open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.BrowserControlInterface, PageViewerFragment.PageViewerInterface, PageListFragment.PageListInterface {
+
+    lateinit var bmList: BookMarkList
+
+    lateinit var bmIntent: Intent
 
     private val pager: ViewPager2 by lazy {
         findViewById(R.id.viewPager)
@@ -16,10 +27,55 @@ class BrowserActivity : AppCompatActivity(), BrowserControlFragment.BrowserContr
         ViewModelProvider(this)[BrowserViewModel::class.java]
     }
 
+    private lateinit var file: File
+    private val internalFilename = "my_file"
+    private lateinit var requestQueue: RequestQueue
+
+
+    //=================================================Activity Result
+    var getContent = registerForActivityResult(
+    ActivityResultContracts.StartActivityForResult()
+    ){result : ActivityResult ->
+        result.data?.run{
+//                Toast.makeText(,"This",Toast.LENGTH_SHORT).show()
+            bmList = this.getSerializableExtra("RETURN",BookMarkList::class.java) as BookMarkList
+            val url = this.getStringExtra("CLICKED")
+            if(url != null){
+                updateTitle(browserViewModel.currentPageIndex,url.toString())
+                supportFragmentManager.findFragmentByTag("f${browserViewModel.currentPageIndex}")?.run {
+                    (this as PageViewerFragment).setPageUrl(url)
+                }
+
+            }
+        }
+//        Log.d("Test1", "${}")
+    }
+
+    //===========================================================onCreate
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        requestQueue = Volley.newRequestQueue(this)
+
+//      create file in internal storage if not already made
+        file = File(filesDir, internalFilename)
+
+        bmList = BookMarkList()
+
+        if(file != null) {
+            val fis = FileInputStream(file)
+            val ois = ObjectInputStream(fis)
+
+
+            bmList = ois.readObject() as BookMarkList
+
+            ois.close()
+        }
+
+        //Create bookmarklist instance
+
+        //assign the pager adapter
         pager.adapter = BrowserFragmentStateAdapter(this)
 
         // Move to previous page index
@@ -64,6 +120,52 @@ class BrowserActivity : AppCompatActivity(), BrowserControlFragment.BrowserContr
         updateTitle(browserViewModel.currentPageIndex,"")
     }
 
+    override fun share(){
+        lateinit var url:String
+        lateinit var title:String
+//        Toast.makeText(this,"Share", Toast.LENGTH_SHORT).show()
+        supportFragmentManager.findFragmentByTag("f${browserViewModel.currentPageIndex}")?.run {
+            url = (this as PageViewerFragment).getPageUrl().toString()
+            title = (this as PageViewerFragment).getPageTitle().toString()
+        }
+
+        val sendIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, url)
+            type = "text/plain"
+        }
+        startActivity(sendIntent)
+    }
+
+    override fun bookmark() {
+        lateinit var url:String
+        lateinit var title:String
+        supportFragmentManager.findFragmentByTag("f${browserViewModel.currentPageIndex}")?.run {
+            url = (this as PageViewerFragment).getPageUrl().toString()
+            title = (this as PageViewerFragment).getPageTitle().toString()
+        }
+        val temp = Bookmark(url,title)
+        if(bmList.list.contains(temp)){
+            Toast.makeText(this,"$url: Title: ${title} already exists!!", Toast.LENGTH_SHORT).show()
+        }else if(url == null || url == "" || title == null || title == ""){
+            Toast.makeText(this,"$url: Title: ${title} is blank!!", Toast.LENGTH_SHORT).show()
+        }else{
+//            Toast.makeText(this,"'$url': Title: ${title} should not be blank!!", Toast.LENGTH_SHORT).show()
+            bmList.add(url,title)
+        }
+
+    }
+
+    override fun bookmarks() {
+
+        //define the intent to lauch bookmark Activity
+        bmIntent = Intent(this,BookmarkActivity::class.java)
+        //add the bookmarklist to it
+        bmIntent.putExtra("BMLIST", bmList)
+
+        getContent.launch(bmIntent)
+    }
+
     override fun closePage() {
     }
 
@@ -90,6 +192,15 @@ class BrowserActivity : AppCompatActivity(), BrowserControlFragment.BrowserContr
 
     override fun pageSelected(pageIndex: Int) {
         pager.setCurrentItem(pageIndex, true)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        val fos = FileOutputStream(file)
+        val oos = ObjectOutputStream(fos)
+
+        oos.writeObject(bmList)
+        oos.close()
     }
 
 }

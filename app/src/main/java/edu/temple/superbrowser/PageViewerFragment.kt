@@ -101,6 +101,13 @@ class PageViewerFragment : Fragment() {
     fun getPageTitle(): String? {
         return webView.title
     }
+    fun getPageUrl():String?{
+        return webView.url
+    }
+    fun setPageUrl(myUrl:String){
+        val cleanUrl = cleanUrl(myUrl)
+        webView.loadUrl(cleanUrl.toString())
+    }
 
     // Helper function to format malformed URLs
     private fun cleanUrl(url: String) : String {
@@ -130,6 +137,7 @@ class PageViewerFragment : Fragment() {
 
     interface PageViewerInterface {
         fun updateTitle (pageId: Int, title: String)
+
     }
 
     companion object {
