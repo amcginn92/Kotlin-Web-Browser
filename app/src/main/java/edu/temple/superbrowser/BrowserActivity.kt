@@ -17,6 +17,7 @@ import com.android.volley.toolbox.Volley
 import java.io.*
 
 
+
 open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.BrowserControlInterface, PageViewerFragment.PageViewerInterface, PageListFragment.PageListInterface {
 
     lateinit var bmList: BookMarkList
@@ -161,6 +162,9 @@ open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.Browser
 //            Toast.makeText(this,"$url: Title: ${title} is blank!!", Toast.LENGTH_SHORT).show()
         }else{
 //            Toast.makeText(this,"'$url': Title: ${title} should not be blank!!", Toast.LENGTH_SHORT).show()
+
+
+            title = title.substring(0, Math.min(title.length, 15));
             bmList.add(url,title)
 //            Toast.makeText(this,"Size ${bmList.list.size}",Toast.LENGTH_SHORT).show()
         }
