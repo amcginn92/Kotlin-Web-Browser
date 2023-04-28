@@ -13,6 +13,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SuperBrowser"
         tools:targetApi="31">
+        <service android:name=".BrowserActivity$ClosingService"
+            android:stopWithTask="false"/>
         <activity
             android:name=".BookmarkActivity"
             android:theme="@style/Theme.AppCompat.Dialog"

@@ -1,7 +1,9 @@
 package edu.temple.superbrowser
 
+import android.app.Service
 import android.content.Intent
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -13,6 +15,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.Volley
 import java.io.*
+
 
 open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.BrowserControlInterface, PageViewerFragment.PageViewerInterface, PageListFragment.PageListInterface {
 
@@ -70,11 +73,6 @@ open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.Browser
 
             //single list read attempt
             bmList = ois.readObject() as BookMarkList
-
-            //read one object at a time attempt
-//            for(i in 0..bmList.list.size - 1){
-//                bmList.list[i] = ois.readObject() as Bookmark
-//            }
 
             ois.close()
             Toast.makeText(this,"Size ${bmList.list.size}",Toast.LENGTH_SHORT).show()
@@ -154,19 +152,19 @@ open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.Browser
             title = (this as PageViewerFragment).getPageTitle().toString()
         }
         val temp = Bookmark(url,title)
-        if(bmList.list.contains(temp)){
-            Toast.makeText(this,"$url: Title: ${title} already exists!!", Toast.LENGTH_SHORT).show()
-        }else if(url == null || url == "" || title == null || title == ""){
-            Toast.makeText(this,"$url: Title: ${title} is blank!!", Toast.LENGTH_SHORT).show()
+        if(bmList.list.contains(temp)){//do nothing
+
+//            Toast.makeText(this,"$url: Title: ${title} already exists!!", Toast.LENGTH_SHORT).show()
+
+        }else if(url == null || url == "" || title == null || title == ""){//do nothing
+
+//            Toast.makeText(this,"$url: Title: ${title} is blank!!", Toast.LENGTH_SHORT).show()
         }else{
 //            Toast.makeText(this,"'$url': Title: ${title} should not be blank!!", Toast.LENGTH_SHORT).show()
             bmList.add(url,title)
-            Toast.makeText(this,"Size ${bmList.list.size}",Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this,"Size ${bmList.list.size}",Toast.LENGTH_SHORT).show()
         }
-
-        for(i in 0..bmList.list.size - 1){
-            Toast.makeText(this,"${bmList.list.get(i).title} ${bmList.list.get(i).url}", Toast.LENGTH_SHORT).show()
-        }
+        writeToFile()
     }
 
     override fun bookmarks() {
@@ -207,6 +205,19 @@ open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.Browser
         pager.setCurrentItem(pageIndex, true)
     }
 
+    fun writeToFile(){
+        val fos = FileOutputStream(file)
+        val oos = ObjectOutputStream(fos)
+        oos.flush()
+
+        //single List write attempt
+        oos.writeObject(bmList as Serializable)
+
+
+        Log.d("Written", "${bmList.list.size}")
+
+        oos.close()
+    }
     override fun onDestroy() {
         super.onDestroy()
         val fos = FileOutputStream(file)
@@ -216,13 +227,33 @@ open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.Browser
         //single List write attempt
         oos.writeObject(bmList as Serializable)
 
-        //write each object separately
-//        for(i in 0..bmList.list.size - 1){
-//            oos.writeObject(bmList.list.get(i) as Serializable)
-//        }
+
         Log.d("Written", "${bmList.list.size}")
 
         oos.close()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        writeToFile()
+    }
+
+    //doesn't work. App is already closed, I'm dumb
+    inner class ClosingService : Service() {
+
+        override fun onBind(intent: Intent?): IBinder? {
+            return null
+        }
+
+        override fun onTaskRemoved(rootIntent: Intent?) {
+            super.onTaskRemoved(rootIntent)
+
+            // Handle application closing
+            writeToFile()
+
+            // Destroy the service
+            stopSelf()
+        }
     }
 
 

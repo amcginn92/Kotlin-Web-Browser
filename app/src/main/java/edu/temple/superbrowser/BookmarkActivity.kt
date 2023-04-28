@@ -3,6 +3,7 @@ package edu.temple.superbrowser
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.WindowManager
@@ -15,6 +16,10 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import java.io.File
+import java.io.FileOutputStream
+import java.io.ObjectOutputStream
+import java.io.Serializable
 
 
 class BookmarkActivity : AppCompatActivity() {
@@ -58,6 +63,7 @@ class BookmarkActivity : AppCompatActivity() {
                         bmList.list.removeAt(it)
                         rec.adapter?.notifyDataSetChanged()
                         update()
+                        writeToFile()
                     }.setNegativeButton("no"){dialog, which ->
                         confirm = 0
                     }
@@ -87,6 +93,26 @@ class BookmarkActivity : AppCompatActivity() {
         intent.putExtra("RETURN",bmList)
         setResult(RESULT_OK, intent)
         finish()
+    }
+
+    //if app was closed after deletion but with bookmarks activity still up
+    //it wasn't saving
+    fun writeToFile(){
+        lateinit var file: File
+        val internalFilename = "my_file"
+        file = File(filesDir, internalFilename)
+
+        val fos = FileOutputStream(file)
+        val oos = ObjectOutputStream(fos)
+        oos.flush()
+
+        //single List write attempt
+        oos.writeObject(bmList as Serializable)
+
+
+        Log.d("Written", "${bmList.list.size}")
+
+        oos.close()
     }
 
 
