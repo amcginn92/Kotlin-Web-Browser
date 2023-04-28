@@ -67,7 +67,15 @@ open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.Browser
         if(file != null) {
             val fis = FileInputStream(file)
             val ois = ObjectInputStream(fis)
+
+            //single list read attempt
             bmList = ois.readObject() as BookMarkList
+
+            //read one object at a time attempt
+//            for(i in 0..bmList.list.size - 1){
+//                bmList.list[i] = ois.readObject() as Bookmark
+//            }
+
             ois.close()
             Toast.makeText(this,"Size ${bmList.list.size}",Toast.LENGTH_SHORT).show()
             Log.d("Read", "${bmList.list.size}")
@@ -154,9 +162,11 @@ open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.Browser
 //            Toast.makeText(this,"'$url': Title: ${title} should not be blank!!", Toast.LENGTH_SHORT).show()
             bmList.add(url,title)
             Toast.makeText(this,"Size ${bmList.list.size}",Toast.LENGTH_SHORT).show()
-
         }
 
+        for(i in 0..bmList.list.size - 1){
+            Toast.makeText(this,"${bmList.list.get(i).title} ${bmList.list.get(i).url}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun bookmarks() {
@@ -197,15 +207,23 @@ open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.Browser
         pager.setCurrentItem(pageIndex, true)
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onDestroy() {
+        super.onDestroy()
         val fos = FileOutputStream(file)
         val oos = ObjectOutputStream(fos)
-        oos.writeObject(bmList)
+        oos.flush()
 
+        //single List write attempt
+        oos.writeObject(bmList as Serializable)
+
+        //write each object separately
+//        for(i in 0..bmList.list.size - 1){
+//            oos.writeObject(bmList.list.get(i) as Serializable)
+//        }
         Log.d("Written", "${bmList.list.size}")
 
         oos.close()
     }
+
 
 }
