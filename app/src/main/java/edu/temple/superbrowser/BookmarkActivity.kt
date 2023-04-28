@@ -1,13 +1,21 @@
 package edu.temple.superbrowser
 
+import android.content.DialogInterface
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.view.WindowManager
+import android.widget.FrameLayout
+import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+
 
 class BookmarkActivity : AppCompatActivity() {
 
@@ -41,10 +49,20 @@ class BookmarkActivity : AppCompatActivity() {
             },
             //==============================================================================delete Lambda
             {
-//                Toast.makeText(this,"position $it", Toast.LENGTH_SHORT).show()
-                bmList.list.removeAt(it)
-                rec.adapter?.notifyDataSetChanged()
-                update()
+
+                val alertDialogBuilder = AlertDialog.Builder(this)
+                var confirm = -1
+                alertDialogBuilder.setMessage("Are you sure you want to delete this bookmark??")
+                    .setTitle("Delete Bookmark")
+                    .setPositiveButton("yes"){dialog, which ->
+                        bmList.list.removeAt(it)
+                        rec.adapter?.notifyDataSetChanged()
+                        update()
+                    }.setNegativeButton("no"){dialog, which ->
+                        confirm = 0
+                    }
+
+                alertDialogBuilder.show()
             }
         )
 

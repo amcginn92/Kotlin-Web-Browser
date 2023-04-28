@@ -2,6 +2,7 @@ package edu.temple.superbrowser
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -66,11 +67,11 @@ open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.Browser
         if(file != null) {
             val fis = FileInputStream(file)
             val ois = ObjectInputStream(fis)
-
-
             bmList = ois.readObject() as BookMarkList
-
             ois.close()
+            Toast.makeText(this,"Size ${bmList.list.size}",Toast.LENGTH_SHORT).show()
+            Log.d("Read", "${bmList.list.size}")
+
         }
 
         //Create bookmarklist instance
@@ -152,6 +153,8 @@ open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.Browser
         }else{
 //            Toast.makeText(this,"'$url': Title: ${title} should not be blank!!", Toast.LENGTH_SHORT).show()
             bmList.add(url,title)
+            Toast.makeText(this,"Size ${bmList.list.size}",Toast.LENGTH_SHORT).show()
+
         }
 
     }
@@ -194,12 +197,14 @@ open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.Browser
         pager.setCurrentItem(pageIndex, true)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onStop() {
+        super.onStop()
         val fos = FileOutputStream(file)
         val oos = ObjectOutputStream(fos)
-
         oos.writeObject(bmList)
+
+        Log.d("Written", "${bmList.list.size}")
+
         oos.close()
     }
 
