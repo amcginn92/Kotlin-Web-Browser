@@ -76,8 +76,8 @@ open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.Browser
             bmList = ois.readObject() as BookMarkList
 
             ois.close()
-            Toast.makeText(this,"Size ${bmList.list.size}",Toast.LENGTH_SHORT).show()
-            Log.d("Read", "${bmList.list.size}")
+//            Toast.makeText(this,"Size ${bmList.list.size}",Toast.LENGTH_SHORT).show()
+//            Log.d("Read", "${bmList.list.size}")
 
         }
 
@@ -153,17 +153,12 @@ open class BrowserActivity : AppCompatActivity(), BrowserControlFragment.Browser
             title = (this as PageViewerFragment).getPageTitle().toString()
         }
         val temp = Bookmark(url,title)
-        if(bmList.list.contains(temp)){//do nothing
-
-//            Toast.makeText(this,"$url: Title: ${title} already exists!!", Toast.LENGTH_SHORT).show()
-
+        if(bmList.list.contains(temp)){
+            Toast.makeText(this,"$url: Title: ${title} already exists!!", Toast.LENGTH_SHORT).show()
         }else if(url == null || url == "" || title == null || title == ""){//do nothing
-
-//            Toast.makeText(this,"$url: Title: ${title} is blank!!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this,"$url: Title: ${title} is blank!!", Toast.LENGTH_SHORT).show()
         }else{
-//            Toast.makeText(this,"'$url': Title: ${title} should not be blank!!", Toast.LENGTH_SHORT).show()
-
-
+//            Toast.makeText(this,"'$url': Title: ${title} should not be blank here", Toast.LENGTH_SHORT).show()
             title = title.substring(0, Math.min(title.length, 15));
             bmList.add(url,title)
 //            Toast.makeText(this,"Size ${bmList.list.size}",Toast.LENGTH_SHORT).show()
